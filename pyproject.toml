@@ -4,4 +4,8 @@ version = "0.1.0"
 description = "A GNC Project"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "control>=0.10.2",
+    "matplotlib>=3.10.8",
+    "numpy>=2.2.6",
+]
