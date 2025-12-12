@@ -1,0 +1,7 @@
+[project]
+name = "gnc-project"
+version = "0.1.0"
+description = "A GNC Project"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
