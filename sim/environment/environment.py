@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import norm
-from utils.constants import EARTH_MU, EARTH_RADIUS
+from sim.utils.constants import EARTH_MU, EARTH_RADIUS
 
 
 class Environment:

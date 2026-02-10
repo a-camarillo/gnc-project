@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from math.matrices import cross_product_matrix
+from sim_math.matrices import cross_product_matrix
 
 
 class AttitudeModel:
@@ -23,7 +23,7 @@ class AttitudeModel:
             raise ValueError('Quaternion must be of shape (4,)')
 
         angular_rate_x = cross_product_matrix(angular_rate)
-        
+
         Omega = np.array([
                 [0,  angular_rate[2], -angular_rate[1], angular_rate[0]],
                 [-angular_rate[2], 0, angular_rate[0], angular_rate[1]],

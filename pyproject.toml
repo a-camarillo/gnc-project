@@ -9,3 +9,11 @@ dependencies = [
     "matplotlib>=3.10.8",
     "numpy>=2.2.6",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
+
+[tool.pytest]
+pythonpath = ["."]

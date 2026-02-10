@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List
 
+
 def cross_product_matrix(
         vector: np.array | List
         ):
