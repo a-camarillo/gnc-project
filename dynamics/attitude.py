@@ -1,5 +1,6 @@
 import numpy as np
 from typing import List
+from math.matrices import cross_product_matrix
 
 
 class AttitudeModel:
@@ -21,11 +22,8 @@ class AttitudeModel:
         if np.shape(quaternion) != (4,):
             raise ValueError('Quaternion must be of shape (4,)')
 
-        angular_rate_skew = np.array([
-            [0, -angular_rate[2], angular_rate[1]],
-            [angular_rate[2], 0, -angular_rate[0]],
-            [-angular_rate[1], angular_rate[0], 0],
-        ])
+        angular_rate_x = cross_product_matrix(angular_rate)
+        
         Omega = np.array([
                 [0,  angular_rate[2], -angular_rate[1], angular_rate[0]],
                 [-angular_rate[2], 0, angular_rate[0], angular_rate[1]],
@@ -36,7 +34,7 @@ class AttitudeModel:
         # DYNAMICS
         angular_rate = angular_rate.reshape(-1, 1)
         angular_acceleration = (np.linalg.inv(self.inertia) @
-                                (external_torque - angular_rate_skew @
+                                (external_torque - angular_rate_x @
                                 (self.inertia @ angular_rate + wheel_momentum))
                                 )
         # KINEMATICS
