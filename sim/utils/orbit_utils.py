@@ -82,4 +82,7 @@ def coe2rv(p, ecc, inc, RAAN, argp, nu):
     position_IJK = perifocal2ijk(RAAN, argp, inc) @ position_PQW
     velocity_IJK = perifocal2ijk(RAAN, argp, inc) @ velocity_PQW
 
+    position_IJK = position_IJK.reshape(-1)
+    velocity_IJK = velocity_IJK.reshape(-1)
+
     return position_IJK, velocity_IJK

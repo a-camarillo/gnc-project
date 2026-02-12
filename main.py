@@ -1,19 +1,12 @@
 from sim.dynamics.attitude import AttitudeModel
 from sim.dynamics.orbit import OrbitModel
 from sim.dynamics.spacecraft import SpaceCraftModel
-from sim.utils.constants import EARTH_MU, EARTH_RADIUS
+from sim.math.ode import rk4_step
+from sim.utils.orbit_utils import coe2rv
+from math import radians
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
-
-def rk4_step(f, t, x, dt):
-    # rk4_step
-    k1 = f(t, x)
-    k2 = f(t+0.5*dt, x+0.5*dt*k1)
-    k3 = f(t+0.5*dt, x+0.5*dt*k2)
-    k4 = f(t+dt, x+dt*k3)
-    return x + (dt/6)*(k1+2*k2+2*k3+k4)
 
 
 def main():
@@ -27,6 +20,27 @@ def main():
         [0, 0, 100],
     ])
 
+    # semi-parameter
+    p = 500*(10**3)
+    # right argument of the ascending node
+    RAAN = radians(40)
+    # inclination
+    inc = radians(54.7)
+    # eccentricity
+    ecc = 0.8
+    # argument of periapsis
+    argp = radians(50)
+    # true anomaly
+    nu = radians(0)
+
+    position0, velocity0 = coe2rv(p, ecc, inc, RAAN, argp, nu)
+    position0_x = position0[0]
+    position0_y = position0[1]
+    position0_z = position0[2]
+    velocity0_x = velocity0[0]
+    velocity0_y = velocity0[1]
+    velocity0_z = velocity0[2]
+
     attitude = AttitudeModel(spacecraft_inertia)
     orbit = OrbitModel()
 
@@ -34,10 +48,8 @@ def main():
     sim_steps = 0
     states = np.zeros((13, steps))
 
-    position0 = EARTH_RADIUS + 400*(10**3)
-    velocity0 = (EARTH_MU/position0)**0.5
-
-    states[:, 0] = np.array([position0, 0, 0, 0, velocity0, 0,
+    states[:, 0] = np.array([position0_x, position0_y, position0_z,
+                             velocity0_x, velocity0_y, velocity0_z,
                              0, 0, 0, 1, 0.1, 0.1, 0.1])
 
     spacecraft = SpaceCraftModel(attitude_model=attitude, orbit_model=orbit)
