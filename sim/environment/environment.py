@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.linalg import norm
 from sim.utils.constants import EARTH_MU, EARTH_RADIUS
+from sim.math.matrices import cross_product_matrix
 
 
 class Environment:
@@ -13,13 +14,14 @@ class Environment:
 
 class Gravity(Environment):
     def __init__(self):
+        super().__init__()
         self.J2 = 0.00108263
 
-    def zonal_harmonics(self, sc_r_I):
-        x = sc_r_I[0]
-        y = sc_r_I[1]
-        z = sc_r_I[2]
-        r = norm(sc_r_I)
+    def zonal_harmonics(self, position):
+        x = position[0]
+        y = position[1]
+        z = position[2]
+        r = norm(position)
 
         del_x = (-(3/2)*self.J2*(self.mu/r**2)*((self.r_earth/r)**2) *
                  ((1 - 5*(z/r)**2)*(x/r)))
@@ -30,7 +32,7 @@ class Gravity(Environment):
 
         return np.array([del_x, del_y, del_z])
 
-    def gravity_gradient(self, sc_r_I, sc_J, attitude_B_LVLH):
+    def gravity_gradient(self, position, sc_inertia, attitude_B_LVLH):
         """
         Gravity gradient vector
         (3*mu/(r^3))*n x J*n
@@ -42,17 +44,12 @@ class Gravity(Environment):
         Now all we need is the attitude of the body relative to the lvlh frame
         to get n_body = A_body_lvlh*n_lvlh
         """
-        nadir = np.array([
-            [0],
-            [0],
-            [1],
-        ])
+        nadir = np.array([0, 0, 1])
+
+        position_norm = norm(position)
 
         n = attitude_B_LVLH @ nadir
 
-        n_cross = np.array([
-            [0, -n[2], n[1]],
-            [n[2], 0, -n[0]],
-            [-n[1], n[0], 0],
-        ])
-        return (3*self.mu/(sc_r_I**3))*(n_cross@(sc_J@n))
+        n_cross = cross_product_matrix(n)
+
+        return (3*self.mu/(position_norm**3))*(n_cross@(sc_inertia@n))

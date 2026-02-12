@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from sim_math.matrices import cross_product_matrix
+from sim.math.matrices import cross_product_matrix
 
 
 class AttitudeModel:
@@ -33,6 +33,7 @@ class AttitudeModel:
 
         # DYNAMICS
         angular_rate = angular_rate.reshape(-1, 1)
+        external_torque = external_torque.reshape(-1, 1)
         angular_acceleration = (np.linalg.inv(self.inertia) @
                                 (external_torque - angular_rate_x @
                                 (self.inertia @ angular_rate + wheel_momentum))

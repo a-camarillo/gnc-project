@@ -1,6 +1,5 @@
 import numpy as np
-from utils.constants import EARTH_MU, EARTH_RADIUS
-from environment.gravity import J2_zonal_harmonics
+from sim.utils.constants import EARTH_MU, EARTH_RADIUS
 from typing import List
 
 
@@ -11,7 +10,8 @@ class OrbitModel:
 
     def two_body_ode(self,
                      position: List | np.ndarray,
-                     velocity: List | np.ndarray
+                     velocity: List | np.ndarray,
+                     gravity_perturbation,
                      ):
 
         if np.shape(position) != (3,):
@@ -22,8 +22,7 @@ class OrbitModel:
         # implement perturbations
 
         # J2 zonal harmonics
-        acceleration_gravity = J2_zonal_harmonics(position,
-                                                  EARTH_MU, EARTH_RADIUS)
+        acceleration_gravity = gravity_perturbation
 
         # calculate unperturbed acceleration from two body equations
         acceleration_unperturbed = (-(self.mu / np.linalg.norm(position)**3)
