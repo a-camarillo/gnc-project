@@ -8,6 +8,7 @@ dependencies = [
     "control>=0.10.2",
     "matplotlib>=3.10.8",
     "numpy>=2.2.6",
+    "ppigrf>=2.1.0",
 ]
 
 [dependency-groups]
