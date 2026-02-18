@@ -8,11 +8,25 @@ class Quaternion:
                  ):
 
         # convert input to numpy array
-        if type(array) is List:
+        if isinstance(array, list):
             array = np.array(array)
 
         self.vector = array[0:3]
         self.scalar = array[3]
+        self._array = array
+
+    def __repr__(self):
+        return (
+            f'{self.__class__.__name__}(Vector={self.vector},'
+            f' Scalar={self.scalar})'
+        )
+
+    def __array__(self, dtype=None, copy=None):
+        if copy is False:
+            raise ValueError(
+                    "`copy=False` isn't supported. A copy is always created."
+                )
+        return np.array(self._array)
 
     def quaternion2rotation_matrix(self):
         q1 = self.vector[0]
