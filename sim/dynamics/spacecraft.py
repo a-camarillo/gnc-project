@@ -1,6 +1,6 @@
 from sim.dynamics.attitude import AttitudeModel
 from sim.dynamics.orbit import OrbitModel
-from sim.environment.environment import Gravity
+from sim.environment.gravity import GravityField
 from sim.math.quaternion import Quaternion
 from sim.frames.conversions import lvlh2inertial
 from numpy import concatenate, shape
@@ -13,7 +13,7 @@ class SpaceCraftModel:
                  ):
         self.attitude = attitude_model
         self.orbit = orbit_model
-        self.gravity = Gravity()
+        self.gravity = GravityField()
 
     def propagate(self, time, states):
         position = states[0:3]

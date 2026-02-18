@@ -1,20 +1,23 @@
 import numpy as np
 from math import cos, sin, asin, atan2
 from numpy.linalg import cross, norm
-from sim.utils.constants import WGS_ECCENTRICITY, WGS_EARTH_SEMIMAJOR_AXIS
-from sim.utils.constatns import WGS_EARTH_SEMIMINOR_AXIS
+from sim.utils.constants import (
+        WGS_ECCENTRICITY, WGS_EARTH_SEMIMAJOR_AXIS,
+        WGS_EARTH_SEMIMINOR_AXIS
+    )
 
 
-def lvlh2inertial(position, velocity):
+def lvlh2inertial(position_inertial, velocity_inertial):
     """
     lvlh2inertial takes position and velocity vectors to get an attitude
     matrix from the lvlh frame to the inertial frame
     """
     # nadir vector
-    o3 = -position / norm(position)
+    o3 = -position_inertial / norm(position_inertial)
 
     # vector orthogonal to orbital plane (negative orbit normal)
-    o2 = -(cross(position, velocity)) / norm(cross(position, velocity))
+    o2 = -((cross(position_inertial, velocity_inertial)) /
+           norm(cross(position_inertial, velocity_inertial)))
 
     # x-axis completing right hand triad
     o1 = cross(o2, o3)
@@ -82,3 +85,25 @@ def ecef2geod(position_ecef):
               (WGS_EARTH_SEMIMAJOR_AXIS**2)/N)
     longitude = atan2(y, x)
     return latitude, longitude, height
+
+
+def inertial2ecef(gmst_angle):
+    """
+    Rotate a position vector from the inertial frame to the time
+    depent Earth-Centered Earth-Fixed frame
+    """
+    return np.array([
+        [cos(gmst_angle), sin(gmst_angle), 0],
+        [-sin(gmst_angle), cos(gmst_angle), 0],
+        [0, 0, 1]
+    ])
+
+
+def ecef2enu(latitude, longitude):
+    return np.array([
+        [-sin(longitude), cos(longitude), 0],
+        [-cos(longitude)*sin(latitude),
+         -sin(longitude)*sin(latitude), cos(latitude)],
+        [cos(longitude)*cos(longitude),
+         sin(longitude)*cos(latitude), sin(latitude)]
+    ])
