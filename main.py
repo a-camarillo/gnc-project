@@ -2,17 +2,23 @@ from sim.dynamics.attitude import AttitudeModel
 from sim.dynamics.orbit import OrbitModel
 from sim.dynamics.spacecraft import SpaceCraftModel
 from sim.math.ode import rk4_step
+from sim.math.quaternion import Quaternion
 from sim.utils.orbit_utils import coe2rv
+from sim.utils.clock import SimulationClock
+from sim.environment import gravity, magnetic
 from math import radians
+from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
 def main():
-    sim_time = 3600
+    sim_time = 3600*4
     plant_time = 0.0
     plant_dt = 0.01
+    epoch = datetime(2025, 1, 1, 0, 0, 0, 0)
+    clock = SimulationClock(epoch)
 
     spacecraft_inertia = np.array([
         [180, 0, 0],
@@ -43,6 +49,8 @@ def main():
 
     attitude = AttitudeModel(spacecraft_inertia)
     orbit = OrbitModel()
+    grav_field = gravity.GravityField()
+    mag_field = magnetic.MagneticField()
 
     steps = int(sim_time/plant_dt)
     sim_steps = 0
@@ -52,16 +60,23 @@ def main():
                              velocity0_x, velocity0_y, velocity0_z,
                              0, 0, 0, 1, 0.1, 0.1, 0.1])
 
-    spacecraft = SpaceCraftModel(attitude_model=attitude, orbit_model=orbit)
+    spacecraft = SpaceCraftModel(attitude_model=attitude, orbit_model=orbit,
+                                 environments=[mag_field, grav_field])
 
     while sim_steps < steps:
         if sim_steps == (steps-1):
             break
+        if (clock.t % 1) == 0:
+            mag_field.calculate_mag_field_body(
+                    position_inertial=states[0:3, sim_steps],
+                    attitude=Quaternion(states[6:10, sim_steps]),
+                    date=clock.datetime()
+            )
         states[:, sim_steps+1] = rk4_step(spacecraft.propagate,
                                           plant_time,
                                           states[:, sim_steps],
                                           plant_dt)
-        plant_time += plant_dt
+        clock.step(plant_dt)
         sim_steps += 1
 
     time = np.arange(0, sim_time, plant_dt)

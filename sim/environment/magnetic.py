@@ -11,6 +11,7 @@ from sim.math.quaternion import Quaternion
 class MagneticField(Environment):
     def __init__(self):
         super().__init__()
+        self.mag_body = np.array([0, 0, 0])
 
     def calculate_mag_field_body(self,
                                  attitude: Quaternion,
@@ -26,11 +27,11 @@ class MagneticField(Environment):
         lon_deg = rad2deg(lon)
         # get magnetic field strength in ENU frame
         mag_E, mag_N, mag_U = ppigrf.igrf(lat_deg, lon_deg, height, date)
-        # create magnetic field vector
+        # create magnetic field vector, convert from nT
         mag_enu = np.array([
-            [mag_E[0]],
-            [mag_N[0]],
-            [mag_U[0]]
+            [mag_E[0][0]*(10**-9)],
+            [mag_N[0][0]*(10**-9)],
+            [mag_U[0][0]*(10**-9)]
         ])
 
         # get magnetic field vector in ECEF
@@ -47,4 +48,4 @@ class MagneticField(Environment):
         # convert to body frame
         mag_body = R_BODY_INERTIAL @ mag_inertial
 
-        return mag_body
+        self.mag_body = mag_body
