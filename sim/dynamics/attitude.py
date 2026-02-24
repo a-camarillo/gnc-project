@@ -4,16 +4,12 @@ from sim.math.matrices import cross_product_matrix
 
 
 class AttitudeModel:
-    def __init__(self,
-                 sc_inertia: np.ndarray,
-                 ):
-        self.inertia = sc_inertia
-        if np.shape(self.inertia) != (3, 3):
-            raise ValueError('Inertia must be a matrix of shape (3, 3)')
+    pass
 
     def attitude_dynamics_kinematics(self,
                                      quaternion: List | np.ndarray,
                                      angular_rate: List | np.ndarray,
+                                     inertia: np.ndarray,
                                      external_torque=np.array([[0], [0], [0]]),
                                      wheel_momentum=np.array([[0], [0], [0]]),
                                      ):
@@ -21,6 +17,8 @@ class AttitudeModel:
             raise ValueError('Angular Rate must be of shape (3,)')
         if np.shape(quaternion) != (4,):
             raise ValueError('Quaternion must be of shape (4,)')
+        if np.shape(inertia) != (3, 3):
+            raise ValueError('Inertia must be a matrix of shape (3, 3)')
 
         angular_rate_x = cross_product_matrix(angular_rate)
 
@@ -34,9 +32,9 @@ class AttitudeModel:
         # DYNAMICS
         angular_rate = angular_rate.reshape(-1, 1)
         external_torque = external_torque.reshape(-1, 1)
-        angular_acceleration = (np.linalg.inv(self.inertia) @
+        angular_acceleration = (np.linalg.inv(inertia) @
                                 (external_torque - angular_rate_x @
-                                (self.inertia @ angular_rate + wheel_momentum))
+                                (inertia @ angular_rate + wheel_momentum))
                                 )
         # KINEMATICS
         quaternion = quaternion.reshape(-1, 1)

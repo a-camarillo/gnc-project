@@ -1,13 +1,21 @@
 from sim.environment.environment import Environment
 from sim.environment.exponential_atmosphere_table import table
-from sim.utils.constants import WGS_EARTH_SEMIMAJOR_AXIS as earth_radius
+from sim.utils.constants import (
+        WGS_EARTH_SEMIMAJOR_AXIS as earth_radius,
+        EARTH_OMEGA,
+    )
 from numpy.linalg import norm
+from numpy import array
 
 
 class Atmosphere(Environment):
     def __init__(self):
         super().__init__()
         self.exponential_table = table
+        ###############################
+        # FOR FLAT PLATE MODEL #
+        # change this later #
+        ###############################
 
     def calculate_air_density(self, position_inertial):
         position = norm(position_inertial)
@@ -287,3 +295,37 @@ class Atmosphere(Environment):
                 density = (nominal_density ** (
                     -(altitude_km - base_altitude)/scale_height))
                 return density
+
+    def calculate_relative_velocity_body(self,
+                                         position_inertial,
+                                         velocity_inertial,
+                                         attitude):
+        """
+        Calculate the velocity of the spacecraft relative to Earth
+        in the body frame.
+        """
+        x = position_inertial[0]
+        y = position_inertial[1]
+        x_dot = velocity_inertial[0]
+        y_dot = velocity_inertial[1]
+        z_dot = velocity_inertial[2]
+
+        relative_velocity = array([
+            x_dot + EARTH_OMEGA*y,
+            y_dot - EARTH_OMEGA*x,
+            z_dot
+        ])
+        return attitude @ relative_velocity
+
+    def calculate_aero_force_and_torque(self,
+                                        position_inertial,
+                                        velocity_inertial,
+                                        attitude):
+        rho = self.calculate_air_density(position_inertial)
+        relative_velocity_B = self.calculate_relative_velocity_body(
+                position_inertial=position_inertial,
+                velocity_inertial=velocity_inertial,
+                attitude=attitude,
+        )
+
+

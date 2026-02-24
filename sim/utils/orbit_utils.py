@@ -2,7 +2,7 @@ from math import cos, acos, degrees, sin
 from numpy.linalg import norm, cross, vecdot
 from sim.frames.conversions import perifocal2ijk
 import numpy as np
-from sim.utils.constants import EARTH_MU
+from sim.utils.constants import EARTH_MU, EARTH_RADIUS
 
 
 def rv2coe(position, velocity, mu):
@@ -65,7 +65,7 @@ def coe2rv(p, ecc, inc, RAAN, argp, nu):
     Calculate the position and velocity vector from the classical
     orbital elements
     """
-
+    p = p + EARTH_RADIUS
     # position and velocity in perifocal coordinates
     position_PQW = np.array([
         [(p*cos(nu))/(1+ecc*cos(nu))],

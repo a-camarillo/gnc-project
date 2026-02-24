@@ -14,30 +14,29 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def main():
-    sim_time = 3600*4
+    sim_time = 3600
     plant_time = 0.0
     plant_dt = 0.01
     epoch = datetime(2025, 1, 1, 0, 0, 0, 0)
     clock = SimulationClock(epoch)
 
-    spacecraft_inertia = np.array([
-        [180, 0, 0],
-        [0, 130, 0],
-        [0, 0, 100],
-    ])
+    spacecraft_dimensions = np.array([0.2, 0.2, 0.2])
+    spacecraft_mass = 6.
 
-    # semi-parameter
-    p = 500*(10**3)
+    # semi-major axis (meters)
+    a = 500*(10**3)
     # right argument of the ascending node
     RAAN = radians(40)
     # inclination
     inc = radians(54.7)
     # eccentricity
-    ecc = 0.8
+    ecc = 0.2
     # argument of periapsis
     argp = radians(50)
     # true anomaly
     nu = radians(0)
+    # semi-parameter
+    p = a*(1-ecc**2)
 
     position0, velocity0 = coe2rv(p, ecc, inc, RAAN, argp, nu)
     position0_x = position0[0]
@@ -47,7 +46,7 @@ def main():
     velocity0_y = velocity0[1]
     velocity0_z = velocity0[2]
 
-    attitude = AttitudeModel(spacecraft_inertia)
+    attitude = AttitudeModel()
     orbit = OrbitModel()
     grav_field = gravity.GravityField()
     mag_field = magnetic.MagneticField()
@@ -61,7 +60,9 @@ def main():
                              0, 0, 0, 1, 0.1, 0.1, 0.1])
 
     spacecraft = SpaceCraftModel(attitude_model=attitude, orbit_model=orbit,
-                                 environments=[mag_field, grav_field])
+                                 environments=[mag_field, grav_field],
+                                 dimensions=spacecraft_dimensions,
+                                 mass=spacecraft_mass)
 
     while sim_steps < steps:
         if sim_steps == (steps-1):
@@ -80,6 +81,10 @@ def main():
         sim_steps += 1
 
     time = np.arange(0, sim_time, plant_dt)
+#    h = []
+#    for i in range(0, len(states)):
+#        angular_momentum = spacecraft.inertia @ states[10:13, i]
+#        h.append(np.linalg.norm(angular_momentum))
 
     fig = plt.figure(tight_layout=True)
 
@@ -88,12 +93,22 @@ def main():
     ax3 = fig.add_subplot(313)
 
     ax1.plot(time, states[10, :])
+    ax1.set_ylim(bottom=0.1, top=0.1)
     ax2.plot(time, states[11, :])
+    ax2.set_ylim(bottom=0.1, top=0.1)
+    ax2.set_ylabel('$\omega$(rad/s)')
     ax3.plot(time, states[12, :])
+    ax3.set_ylim(bottom=0.1, top=0.1)
+    ax3.set_xlabel('t(s)')
+    fig.suptitle('Spacecraft Angular Rate (rad/s)')
 
     fig2 = plt.figure()
     ax4 = fig2.add_subplot(111, projection='3d')
     ax4.plot(states[0, :], states[1, :], states[2, :])
+
+#    fig3 = plt.figure(tight_layout=True)
+#    ax5 = fig3.add_subplot(111)
+#    ax5.plot(time, h)
 
     plt.show()
 

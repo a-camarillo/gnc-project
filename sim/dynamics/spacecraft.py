@@ -2,9 +2,11 @@ from sim.dynamics.attitude import AttitudeModel
 from sim.dynamics.orbit import OrbitModel
 from sim.environment.gravity import GravityField
 from sim.environment.magnetic import MagneticField
+from sim.environment.atmosphere import Atmosphere
 from sim.math.quaternion import Quaternion
 from sim.math.matrices import cross_product_matrix
 from sim.frames.conversions import lvlh2inertial
+from sim.math.inertia import calculate_rectangular_moment_of_inertia
 from numpy import array, concatenate
 
 
@@ -12,7 +14,9 @@ class SpaceCraftModel:
     def __init__(self,
                  attitude_model: AttitudeModel,
                  orbit_model: OrbitModel,
-                 environments: list[GravityField | MagneticField],
+                 environments: list[GravityField | MagneticField | Atmosphere],
+                 mass: float,
+                 dimensions,
                  ):
         self.attitude = attitude_model
         self.orbit = orbit_model
@@ -25,6 +29,12 @@ class SpaceCraftModel:
                 self.gravity = None
                 self.magnetic = None
                 self.atmosphere = None
+        self.inertia = calculate_rectangular_moment_of_inertia(
+                dimensions[0],
+                dimensions[1],
+                dimensions[2],
+                mass
+                )
 
     def propagate(self, time, states):
         position = states[0:3]
@@ -50,13 +60,13 @@ class SpaceCraftModel:
 
             # attitude
             gravity_gradient = self.gravity.gravity_gradient(
-                    position, self.attitude.inertia, attitude_lvlh2body)
+                    position, self.inertia, attitude_lvlh2body)
             disturbance_torques += gravity_gradient
 
         # calculate magnetic field effects
         if self.magnetic:
             # attitude only, magnetic field does not effect orbit
-            magnetic_dipole = array([5., 5., 5.])  # Am^2
+            magnetic_dipole = array([0.2, 0.2, 0.2])  # Am^2
             mag_body = self.magnetic.mag_body
             magnetic_torque = (cross_product_matrix(magnetic_dipole) @
                                mag_body).reshape((-1,))
@@ -67,7 +77,8 @@ class SpaceCraftModel:
                                                     velocity,
                                                     orbital_perturbations)
         next_attitude_states = self.attitude.attitude_dynamics_kinematics(
-                quaternion, angular_rate, external_torque=disturbance_torques)
+                quaternion, angular_rate, self.inertia,
+                external_torque=disturbance_torques)
 
         propagated_states = concatenate((next_orbit_states,
                                         next_attitude_states))

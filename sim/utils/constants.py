@@ -19,6 +19,10 @@ J_SC = np.array([
     [0, 0, 80],
 ])
 
+# angular velocity of earth's rotation in rad/s
+EARTH_OMEGA = 0.000_072_921_158_553
+
+######################################
 # WGS84 Constants #
 
 # Earth's semimajor axis in m
@@ -32,3 +36,5 @@ WGS_FLATTENING = 1/298.257
 
 # eccentricity
 WGS_ECCENTRICITY = 0.0818
+
+#######################################
